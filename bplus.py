@@ -5,6 +5,12 @@ B+Tree:
     nodes only guide the search process.
     - A deleted key must be removed from the leaf node, but it may
     still exist in inner nodes.
+
+B+Tree Design choices:
+    - Node Size
+    - Merge Threshold
+    - Variable-Length Keys
+    - Intra-Node Search
 """
 
 
@@ -276,6 +282,9 @@ class BPlusTreeMap:
             else:
                 self._handle_overflow(leaf, key, value)
 
+    def _handle_underflow(self, leaf:BPlusNode):
+        return 
+
     def delete(self, key: Any):
         """
         Deletion from a B+-tree again needs to be sure to maintain the property that all nodes must be at least half full.
@@ -314,6 +323,7 @@ class BPlusTreeMap:
             if leaf_size > self.get_min_keys:
                 leaf._delete(key)
             else:
-                ...
+                leaf._delete(key)
+                self._handle_underflow(leaf)
         else:
             raise KeyError(f"Index key `{key}` not found in tree")
