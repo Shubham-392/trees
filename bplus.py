@@ -1,3 +1,15 @@
+"""
+
+B+Tree:
+    - The B+Tree only stores values in `leaf` nodes. Inner
+    nodes only guide the search process.
+    - A deleted key must be removed from the leaf node, but it may
+    still exist in inner nodes.
+"""
+
+
+
+
 from __future__ import annotations
 
 import math
@@ -60,9 +72,16 @@ class BPlusNode:
             self.keys.append(key)
             self.keys.sort()
             idx = self.keys.index(key)
-            if self.values:
-                self.values.insert(idx, value)
+            self.values.insert(idx, value)
 
+        else:
+            raise KeyError("You are trying to insert (key, value) pair in non-leaf node which cannot be possible.This method is not designed for this purpose !!!")
+
+    def _delete(self, key:Any):
+        # remove the key from keys and corresponding value
+        idx = self.keys.index(key)
+        self.keys.remove(key)
+        self.values.pop(idx)
 
 class BPlusTreeMap:
     def __init__(self, order: int):
@@ -290,4 +309,11 @@ class BPlusTreeMap:
 
         
         key_exists, leaf = self._search(key)
-        return key_exists, leaf
+        if key_exists:
+            leaf_size = leaf.get_size()
+            if leaf_size > self.get_min_keys:
+                leaf._delete(key)
+            else:
+                ...
+        else:
+            raise KeyError(f"Index key `{key}` not found in tree")

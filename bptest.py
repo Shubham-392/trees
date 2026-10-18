@@ -23,7 +23,8 @@ bptmap.insert(28,"dg")
 bptmap.insert(29,"dg")
 bptmap.insert(30,"dg")
 bptmap.insert(27.5,"dg")
-_, leaf = bptmap.delete(18)
-print("\nfound leaf is: ", leaf)
+
+bptmap.delete(30)
+bptmap.delete(27.5)
 
 print(bptmap.root)
