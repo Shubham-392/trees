@@ -96,12 +96,12 @@ class BPlusNode:
         right_s: BPlusNode | None = None
         sep_idx: int | None = None
         if self_idx > 0:
-            left_s = self.prev_leaf
+            left_s = self.parent.children[self_idx-1]
             sep_idx = self_idx - 1
 
         if self_idx <= len(self.parent.keys) - 1:
-            right_s = self.next_leaf
-            sep_idx = self_idx
+            right_s = self.parent.children[self_idx+1]
+            sep_idx = self_idx - 1 
         return left_s, right_s, sep_idx
 
     def _borrow_from(
@@ -127,23 +127,80 @@ class BPlusNode:
 
         elif right_s is None:
             # borrow from left_s
-            borrow_key = right_s.keys.pop()
-            borrow_value = right_s.values.pop()
+            borrow_key = left_s.keys.pop()
+            borrow_value = left_s.values.pop()
 
-            # both self and right_s are leaf node
-            self.keys.append(borrow_key)
-            self.values.append(borrow_value)
+            # both self and leaf_s are leaf node
+            self.keys.insert(0,borrow_key)
+            self.values.insert(0,borrow_value)
+            # if non-leaf nodes
             if left_s.children:
                 left_s.children[-1].parent  = self
 
-                self.children.insert(0, right_s.children.pop())
+                self.children.insert(0, left_s.children.pop())
             # replace the parent.keys[sep_idx] with current right_s.keys[0]
-            self.parent.keys[sep_idx] = left_s.keys[-1]
+            self.parent.keys[sep_idx] = self.keys[0]
 
         else:
             raise ValueError(
                 "Cannot borrow from both left and right nodes. Use self._merge() for other reasons"
             )
+
+
+    def _merge(
+        self,
+        sep_idx: int,
+        left_s: BPlusNode | None = None,
+        right_s: BPlusNode | None = None,
+    ):
+        parent = self.parent
+        if (left_s is None):
+            # merge with right_sibling
+            # and start inserting the elements from self into right_s from start
+            
+            if right_s.is_leaf():
+                right_s.keys[0:0] = self.keys
+                right_s.values[0:0] = self.values
+                self.values.clear()
+                # fix leaf links: my prev <-> right
+                right_s.prev_leaf = self.prev_leaf
+                parent.keys.pop(sep_idx)
+                if self.prev_leaf:
+                    self.prev_leaf.next_leaf = right_s
+
+            else:
+                # merge the sep_idx key in parent with right_s
+                # and sort it 
+                right_s.keys.insert(0, parent.keys.pop(sep_idx))
+                right_s.keys[0:0] = self.keys
+                self.children[0:0] = right_s.children
+                for c in self.children:
+                    c.parent = right_s
+        else:
+            # merge with left_sibling
+            if left_s.is_leaf():
+                left_s.keys.extend(self.keys)
+                left_s.values.extend(self.values)
+                self.values.clear()
+                # fix leaf links: my prev <-> right
+                left_s.next_leaf = self.next_leaf
+                parent.keys.pop(sep_idx)
+                if self.next_leaf:
+                    self.next_leaf.prev_leaf = left_s
+
+            else:
+                # merge the sep_idx key in parent with right_s
+                # and sort it 
+                left_s.keys.append(parent.keys.pop(sep_idx))
+                left_s.keys.extend(self.keys)
+                left_s.children.extend(self.children)
+                for c in self.children:
+                    c.parent = left_s
+        
+        parent.children.remove(self)
+        self.keys.clear()
+        self.parent = None
+
             
 class BPlusTreeMap:
     def __init__(self, order: int):
@@ -176,10 +233,12 @@ class BPlusTreeMap:
 
         node_children = node.children
         node_keys = node.keys
+        print(node_keys)
         for i, bound_key in enumerate(node_keys):
             if key < bound_key:
                 return self._leaf_search(key, node_children[i])
 
+        
         return self._leaf_search(key, node_children[node.get_size()])
 
     def _search(self, key):
@@ -334,7 +393,7 @@ class BPlusTreeMap:
 
                 # update the BTreeMap main properties
                 self.root = new_root
-
+                self.header.root_page_id = self.root
             else:
                 self._handle_overflow(leaf, key, value)
 
@@ -343,6 +402,14 @@ class BPlusTreeMap:
         # children and for a `leaf` atmost one sibling must exists
         # we will prioritize the left_sibling to sacrifice first and then move on to next
         # first operation to get left_sibling and right_sibling
+        if node.is_root():
+            if node.get_size() == 0  and (len(node.children)==1):
+                node.children[0].parent = None
+                self.root = node.children[0]
+                self.header.root_page_id = self.root
+                return
+            return 
+
         left_s, right_s, sep_idx = node._get_siblings()
         print(f'\n left_s: {left_s}   right_s: {right_s}   idx: {sep_idx}\n')
         parent = node.get_parent()
@@ -356,6 +423,14 @@ class BPlusTreeMap:
             node._borrow_from(sep_idx, right_s=right_s)
             return
 
+        # merging
+        if left_s is not None:
+            # print("called _merge to left_sibling")
+            node._merge(sep_idx, left_s =left_s)
+
+        else: 
+            node._merge(sep_idx, right_s=right_s)
+            
         if len(parent.keys) < self.get_min_keys:
             self._handle_underflow(node=parent)
 

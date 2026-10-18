@@ -23,7 +23,20 @@ bptmap.insert(28,"dg")
 bptmap.insert(29,"dg")
 bptmap.insert(30,"dg")
 
+bptmap.delete(30)
 bptmap.delete(27)
+bptmap.delete(key=29)
+bptmap.delete(28)
+bptmap.delete(26)
+bptmap.delete(25)
+bptmap.delete(24)
+bptmap.delete(23)
+bptmap.delete(22)
+bptmap.delete(21)
+bptmap.delete(20)
+bptmap.delete(19)
+bptmap.delete(18)
+bptmap.delete(17)
 
 # keys = [7, 10, 1, 23, 5, 15, 17, 9, 11, 39,35,8,40,25]
 # for key in keys:
