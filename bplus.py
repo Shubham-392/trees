@@ -13,9 +13,6 @@ B+Tree Design choices:
     - Intra-Node Search
 """
 
-
-
-
 from __future__ import annotations
 
 import math
@@ -81,13 +78,53 @@ class BPlusNode:
             self.values.insert(idx, value)
 
         else:
-            raise KeyError("You are trying to insert (key, value) pair in non-leaf node which cannot be possible.This method is not designed for this purpose !!!")
+            raise KeyError(
+                "You are trying to insert (key, value) pair in non-leaf node which cannot be possible.This method is not designed for this purpose !!!"
+            )
 
-    def _delete(self, key:Any):
+    def _delete(self, key: Any):
         # remove the key from keys and corresponding value
         idx = self.keys.index(key)
         self.keys.remove(key)
         self.values.pop(idx)
+
+    def _get_siblings(self):
+        # self index in parent's children list
+        self_idx = self.parent.children.index(self)
+        print(f'\nself_idx: {self_idx}\n')
+        left_s: BPlusNode | None = None
+        right_s: BPlusNode | None = None
+        sep_idx: int | None = None
+        if self_idx > 0:
+            left_s = self.prev_leaf
+            sep_idx = self_idx - 1
+
+        if self_idx <= len(self.parent.keys) - 1:
+            right_s = self.next_leaf
+            sep_idx = self_idx
+        return left_s, right_s, sep_idx
+
+    def _borrow_from(
+        self,
+        sep_idx: int,
+        left_s: BPlusNode | None = None,
+        right_s: BPlusNode | None = None,
+    ):
+        if left_s is None:
+            # borrow from right_s
+            borrow_key = right_s.keys.pop(0)
+            borrow_value = right_s.values.pop(0)
+
+            # both self and right_s are leaf node
+            self.keys.append(borrow_key)
+            self.values.append(borrow_value)
+            if right_s.children:
+                right_s.children[0].parent  = self
+
+                self.children.insert(-1, right_s.children.pop(0))
+            # replace the parent.keys[sep_idx] with current right_s[0]
+            self.parent.keys[sep_idx] = right_s.keys[0]
+
 
 class BPlusTreeMap:
     def __init__(self, order: int):
@@ -133,7 +170,7 @@ class BPlusTreeMap:
         In insert() case:
             - If key_exists=True then `key` already exists and insert will throw KeyError Exception
             - If key_exists=False then insert() function will add the `key` in that `leaf` with handling overflow
-           
+
         In delete() case:
            - for delete operation to work key must exists in first place otherwise key_exists=False will be the result
            - So key_exists=True is mandate for delete() operation to use this search functionality
@@ -225,7 +262,7 @@ class BPlusTreeMap:
         # if key already exists what we are searching
         # we have handle that case also
         key_exists, leaf = self._search(key)
-        
+
         if key_exists:
             raise ValueError("Key already exists can't add same key twice!!!")
 
@@ -282,8 +319,26 @@ class BPlusTreeMap:
             else:
                 self._handle_overflow(leaf, key, value)
 
-    def _handle_underflow(self, leaf:BPlusNode):
-        return 
+    def _handle_underflow(self, node: BPlusNode):
+        # left_sibling and right_sibling are those sibling which belongs to the `leaf` parent's
+        # children and for a `leaf` atmost one sibling must exists
+        # we will prioritize the left_sibling to sacrifice first and then move on to next
+        # first operation to get left_sibling and right_sibling
+        left_s, right_s, sep_idx = node._get_siblings()
+        print(f'\n left_s: {left_s}   right_s: {right_s}   idx: {sep_idx}\n')
+        parent = node.get_parent()
+        if (left_s is not None) and len(left_s.keys) > self.get_min_keys:
+            # borrow from left_sibling
+            node._borrow_from(sep_idx, left_s=left_s)
+            return
+
+        if (right_s is not None) and len(right_s.keys) > self.get_min_keys:
+            # borrow from right_sibling
+            node._borrow_from(sep_idx, right_s=right_s)
+            return
+
+        if len(parent.keys) < self.get_min_keys:
+            self._handle_underflow(node=parent)
 
     def delete(self, key: Any):
         """
@@ -315,15 +370,13 @@ class BPlusTreeMap:
         #     c). If the last two children of the root merge together into one node,
         #         then this merged node becomes the new root and the tree loses a level.
 
-
-        
         key_exists, leaf = self._search(key)
         if key_exists:
+            # delete the index key first then start to balance the tree from leaf-to-root upward
+            leaf._delete(key)
             leaf_size = leaf.get_size()
-            if leaf_size > self.get_min_keys:
-                leaf._delete(key)
-            else:
-                leaf._delete(key)
+            if leaf_size < self.get_min_keys:
+                print("Called underflow")
                 self._handle_underflow(leaf)
         else:
             raise KeyError(f"Index key `{key}` not found in tree")

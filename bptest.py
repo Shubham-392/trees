@@ -22,9 +22,10 @@ bptmap.insert(28,"dg")
 
 bptmap.insert(29,"dg")
 bptmap.insert(30,"dg")
-bptmap.insert(27.5,"dg")
 
-bptmap.delete(30)
-bptmap.delete(27.5)
+bptmap.delete(27)
 
+# keys = [7, 10, 1, 23, 5, 15, 17, 9, 11, 39,35,8,40,25]
+# for key in keys:
+#     bptmap.insert(key, value=f'{key}')
 print(bptmap.root)
