@@ -101,7 +101,7 @@ class BPlusNode:
 
         if self_idx <= len(self.parent.keys) - 1:
             right_s = self.parent.children[self_idx+1]
-            sep_idx = self_idx - 1 
+            sep_idx = self_idx
         return left_s, right_s, sep_idx
 
     def _borrow_from(
@@ -112,34 +112,43 @@ class BPlusNode:
     ):
         if left_s is None:
             # borrow from right_s
-            borrow_key = right_s.keys.pop(0)
-            borrow_value = right_s.values.pop(0)
+            if self.is_leaf():
+                borrow_key = right_s.keys.pop(0)
+                borrow_value = right_s.values.pop(0)
 
-            # both self and right_s are leaf node
-            self.keys.append(borrow_key)
-            self.values.append(borrow_value)
-            if right_s.children:
-                right_s.children[0].parent  = self
+                self.keys.append(borrow_key)
+                self.values.append(borrow_value)
+                # replace the parent.keys[sep_idx] with current right_s.keys[0]
+                self.parent.keys[sep_idx] = right_s.keys[0]
 
-                self.children.insert(-1, right_s.children.pop(0))
-            # replace the parent.keys[sep_idx] with current right_s[0]
-            self.parent.keys[sep_idx] = right_s.keys[0]
+            else:
+                # parent's separator comes down, right_s's first key goes up
+                self.keys.append(self.parent.keys[sep_idx])
+                self.parent.keys[sep_idx] = right_s.keys.pop(0)
+
+                child = right_s.children.pop(0)
+                child.parent = self
+                self.children.append(child)
 
         elif right_s is None:
             # borrow from left_s
-            borrow_key = left_s.keys.pop()
-            borrow_value = left_s.values.pop()
+            if self.is_leaf():
+                borrow_key = left_s.keys.pop()
+                borrow_value = left_s.values.pop()
 
-            # both self and leaf_s are leaf node
-            self.keys.insert(0,borrow_key)
-            self.values.insert(0,borrow_value)
-            # if non-leaf nodes
-            if left_s.children:
-                left_s.children[-1].parent  = self
+                self.keys.insert(0, borrow_key)
+                self.values.insert(0, borrow_value)
+                # replace the parent.keys[sep_idx] with current self.keys[0]
+                self.parent.keys[sep_idx] = self.keys[0]
 
-                self.children.insert(0, left_s.children.pop())
-            # replace the parent.keys[sep_idx] with current right_s.keys[0]
-            self.parent.keys[sep_idx] = self.keys[0]
+            else:
+                # parent's separator comes down, left_s's last key goes up
+                self.keys.insert(0, self.parent.keys[sep_idx])
+                self.parent.keys[sep_idx] = left_s.keys.pop()
+
+                child = left_s.children.pop()
+                child.parent = self
+                self.children.insert(0, child)
 
         else:
             raise ValueError(
@@ -173,7 +182,7 @@ class BPlusNode:
                 # and sort it 
                 right_s.keys.insert(0, parent.keys.pop(sep_idx))
                 right_s.keys[0:0] = self.keys
-                self.children[0:0] = right_s.children
+                right_s.children[0:0] = self.children
                 for c in self.children:
                     c.parent = right_s
         else:
@@ -375,7 +384,7 @@ class BPlusTreeMap:
 
                 # delete the keys and values from leaf as they are inserted in right_node
                 del leaf.keys[self._median :]
-                del leaf.keys[self._median :]
+                del leaf.values[self._median :]
 
                 # copy the median to the new_root
                 new_root.keys.append(median)
