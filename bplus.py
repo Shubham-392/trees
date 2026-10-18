@@ -125,7 +125,26 @@ class BPlusNode:
             # replace the parent.keys[sep_idx] with current right_s[0]
             self.parent.keys[sep_idx] = right_s.keys[0]
 
+        elif right_s is None:
+            # borrow from left_s
+            borrow_key = right_s.keys.pop()
+            borrow_value = right_s.values.pop()
 
+            # both self and right_s are leaf node
+            self.keys.append(borrow_key)
+            self.values.append(borrow_value)
+            if left_s.children:
+                left_s.children[-1].parent  = self
+
+                self.children.insert(0, right_s.children.pop())
+            # replace the parent.keys[sep_idx] with current right_s.keys[0]
+            self.parent.keys[sep_idx] = left_s.keys[-1]
+
+        else:
+            raise ValueError(
+                "Cannot borrow from both left and right nodes. Use self._merge() for other reasons"
+            )
+            
 class BPlusTreeMap:
     def __init__(self, order: int):
         self.order = order
