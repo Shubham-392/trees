@@ -37,20 +37,43 @@ Tradeoffs:
     ` Use of a Bloom filter for this purpose, however, does increase memory usage.`
 """
 
+import math
 from typing import Any
 
 
 # Implementaion algorithms reference is taken from wikipedia
 # source: https://en.wikipedia.org/wiki/Bloom_filter
-class BloomFilter:
-    def __init__(self, bitlen: int):
-        self.bitlen = bitlen
-        self.bit_array = [0 for _ in range(self.bitlen + 1)]
+class MinimalBloomFilter:
+    def __init__(self, false_p: float, expected_elem: int):
+        
+        if expected_elem <= 0:
+            raise ValueError("Expected number of elements must be positive integer.")
+        if (0 < false_p < 1) and isinstance(false_p, float):
+            self.false_p = false_p
+        else:
+            raise ValueError(
+                "False positive probability(false_p) should be in float and between exclusive (0,1)"
+            )
+        self.expected_elem = (
+            expected_elem  # n: number of expected element (upper bound estimation)
+        )
+        self.bitlen = math.ceil(
+            (self.expected_elem * math.log(self.false_p))
+            / math.log(1 / pow(2, math.log(2)))
+        )
+        # hash functions based on expected_elem and array length
+        self.hash_count = max(
+            1, (round((self.bitlen / self.expected_elem) * math.log(2)))
+        )
+
+        # bit array init
+        self.bit_array = [0] * self.bitlen
         self._elem_counter = 0
 
     def insert(x: Any):
         # To add an element, feed it to each of the k hash functions to get k array positions.
         # Set the bits at all these positions to 1.
+        # increase the count for inserted element i.e., self._elem_counter += 1
         ...
 
     def lookup(x: Any):
