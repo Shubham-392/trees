@@ -40,12 +40,16 @@ Tradeoffs:
 import math
 from typing import Any
 
+import mmh3
+
+HASH_FUNCS: list[object] = []
+
 
 # Implementaion algorithms reference is taken from wikipedia
 # source: https://en.wikipedia.org/wiki/Bloom_filter
 class MinimalBloomFilter:
-    def __init__(self, false_p: float, expected_elem: int):
-        
+    def __init__(self, expected_elem: int, false_p: float = 0.000001):
+
         if expected_elem <= 0:
             raise ValueError("Expected number of elements must be positive integer.")
         if (0 < false_p < 1) and isinstance(false_p, float):
@@ -57,26 +61,31 @@ class MinimalBloomFilter:
         self.expected_elem = (
             expected_elem  # n: number of expected element (upper bound estimation)
         )
-        self.bitlen = math.ceil(
+        self._bitlen = math.ceil(
             (self.expected_elem * math.log(self.false_p))
             / math.log(1 / pow(2, math.log(2)))
         )
         # hash functions based on expected_elem and array length
-        self.hash_count = max(
+        self._hash_count = max(
             1, (round((self.bitlen / self.expected_elem) * math.log(2)))
         )
 
         # bit array init
-        self.bit_array = [0] * self.bitlen
+        self._bit_array = [0] * self.bitlen
         self._elem_counter = 0
 
-    def insert(x: Any):
+
+    def insert(self, x: Any):
         # To add an element, feed it to each of the k hash functions to get k array positions.
         # Set the bits at all these positions to 1.
         # increase the count for inserted element i.e., self._elem_counter += 1
-        ...
+        if not self.lookup(x):
+            for i in range(self._hash_count):
+                self._bit_array[mmh3.hash(x, i) % self._bitlen] = True
 
-    def lookup(x: Any):
+            self._elem_counter += 1
+
+    def lookup(self, x: Any):
         # To test whether an element is in the set,
         # feed it to each of the k hash functions to get k array positions.
         # If any of the bits at these positions is 0, the element is definitely not in the set;
@@ -84,4 +93,8 @@ class MinimalBloomFilter:
         #
         # If all are 1, then either the element is in the set,
         # or the bits have by chance been set to 1 during the insertion of other elements, resulting in a false positive.
-        ...
+        for i in range(self._hash_count):
+            if not self._bit_array[mmh3.hash(x, i) % self._bitlen]:
+                return False
+
+        return True
