@@ -9,8 +9,10 @@ Python implementations of tree data structures used in databases and storage sys
 
 ## Planned
 
+- Filters (BloomFilters, Skip Lists, Tries/Radix Trees, etc.)
 - R-Tree
 - Geo-spatial trees
+
 
 ## Setup
 
