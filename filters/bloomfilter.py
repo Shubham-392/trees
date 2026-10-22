@@ -67,12 +67,20 @@ class MinimalBloomFilter:
         )
         # hash functions based on expected_elem and array length
         self._hash_count = max(
-            1, (round((self.bitlen / self.expected_elem) * math.log(2)))
+            1, (round((self._bitlen / self.expected_elem) * math.log(2)))
         )
 
         # bit array init
-        self._bit_array = [0] * self.bitlen
+        self._bit_array = [0] * self._bitlen
         self._elem_counter = 0
+
+    @property
+    def get_m(self):
+        return self._bitlen
+
+    @property
+    def get_k(self):
+        return self._hash_count
 
 
     def insert(self, x: Any):
@@ -98,3 +106,7 @@ class MinimalBloomFilter:
                 return False
 
         return True
+
+
+    def __contains__(self, x:Any):
+        return self.lookup(x)
