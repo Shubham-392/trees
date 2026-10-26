@@ -14,32 +14,8 @@
 // 4. lazy synchronization
 // 5. Non-blocking synchronization
 
-
-
-
-// Coarse-Grained Synchronization:
-// take a sequential implementation of the class, add a scalable lock field, and ensure
-// that each method call acquires and releases that lock. We call this approach
-// coarse-grained synchronization.
-
-#include <mutex>
-#include <optional>
+#include "LinkedListNode.h"
 #include <vector>
-
-class LinkedListNode{
-    public:
-        // node constructor
-        explicit LinkedListNode(int key);
-        explicit LinkedListNode(int key, LinkedListNode* next );
-        explicit LinkedListNode(const LinkedListNode& node);
-        
-        ~LinkedListNode() = default;
-        
-        int key;
-        LinkedListNode* next{nullptr};
-        
-};
-
 
 class UnSyncLinkedList{
     public:
