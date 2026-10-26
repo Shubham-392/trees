@@ -22,13 +22,18 @@
 // that each method call acquires and releases that lock. We call this approach
 // coarse-grained synchronization.
 
+#include <mutex>
+#include <optional>
+#include <vector>
+
 class LinkedListNode{
     public:
         // node constructor
         explicit LinkedListNode(int key);
+        explicit LinkedListNode(int key, LinkedListNode* next );
+        explicit LinkedListNode(const LinkedListNode& node);
+        
         ~LinkedListNode() = default;
-        // node specific method
-        LinkedListNode* laterNode(int idx);
         
         int key;
         LinkedListNode* next{nullptr};
@@ -38,13 +43,30 @@ class LinkedListNode{
 
 class UnSyncLinkedList{
     public:
-        virtual void add();
-};
+        UnSyncLinkedList() = default;
+        UnSyncLinkedList(const std::vector<int>& arr);
+        
+        virtual ~UnSyncLinkedList(){
+            LinkedListNode *curr, *freed;
+            
+              curr = m_head;
+              while (curr != nullptr) {
+                freed = curr;
+                curr = curr->next;
+                delete freed;
+              }
+        };
+        // derived class have to override these methods
+        virtual void add(int key) = 0;
+        virtual int remove(int key) = 0; // return -1 if not found
+        virtual int getSize() = 0;
+        
+    protected:
+        void m_add(int key);
+        int m_remove(int key);
+        LinkedListNode* m_search(int key);
 
-#include <mutex>
-class CoraseGrainedLinkedList{
     private:
-        std::mutex mut_;
-
-    public:
+        LinkedListNode* m_head{nullptr};
+        int m_size{0};
 };
