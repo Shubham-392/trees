@@ -13,11 +13,38 @@
 // 3. Optimistic Synchronization
 // 4. lazy synchronization
 // 5. Non-blocking synchronization
-#include <vector>
-class LinkedList{
-    public: 
-        LinkedList();
-        LinkedList(int len);
-        LinkedList(std::vector<int> arr);
+
+
+
+
+// Coarse-Grained Synchronization:
+// take a sequential implementation of the class, add a scalable lock field, and ensure
+// that each method call acquires and releases that lock. We call this approach
+// coarse-grained synchronization.
+
+class LinkedListNode{
+    public:
+        // node constructor
+        explicit LinkedListNode(int key);
+        ~LinkedListNode() = default;
+        // node specific method
+        LinkedListNode* laterNode(int idx);
         
+        int key;
+        LinkedListNode* next{nullptr};
+        
+};
+
+
+class UnSyncLinkedList{
+    public:
+        virtual void add();
+};
+
+#include <mutex>
+class CoraseGrainedLinkedList{
+    private:
+        std::mutex mut_;
+
+    public:
 };
