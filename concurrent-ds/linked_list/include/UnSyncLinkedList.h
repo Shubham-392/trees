@@ -16,13 +16,14 @@
 
 #include "LinkedListNode.h"
 #include <vector>
+#include <optional>
 
 class UnSyncLinkedList{
     public:
         UnSyncLinkedList() = default;
         UnSyncLinkedList(const std::vector<int>& arr);
         
-        virtual ~UnSyncLinkedList(){
+        ~UnSyncLinkedList(){
             LinkedListNode *curr, *freed;
             
               curr = m_head;
@@ -34,15 +35,16 @@ class UnSyncLinkedList{
         };
         // derived class have to override these methods
         virtual void add(int key) = 0;
-        virtual int remove(int key) = 0; // return -1 if not found
+        virtual bool remove(int key) = 0; // return -1 if not found
         virtual int getSize() = 0;
         
     protected:
         void m_add(int key);
-        int m_remove(int key);
-        LinkedListNode* m_search(int key);
+        bool m_remove(int key);
+        
+        LinkedListNode* m_head{nullptr};
+        LinkedListNode* m_tail{nullptr};
 
     private:
-        LinkedListNode* m_head{nullptr};
         int m_size{0};
 };

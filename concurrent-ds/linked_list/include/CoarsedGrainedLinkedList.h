@@ -18,7 +18,7 @@ class CoarseGrainedLinkedList: public UnSyncLinkedList{
         ~CoarseGrainedLinkedList();
         // public members
         void add(int key) override; // gives out exception for duplicate key insertion
-        int remove(int key) override;
+        bool remove(int key) override;
         int getSize() override;
         
     private:
