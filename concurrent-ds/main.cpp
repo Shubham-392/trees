@@ -1,6 +1,5 @@
 #include "CoarsedGrainedLinkedList.h"
 #include <iostream>
-#include <thread>
 
 int main(){
     CoarseGrainedLinkedList list;
