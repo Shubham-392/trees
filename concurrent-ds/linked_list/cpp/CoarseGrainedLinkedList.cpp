@@ -13,9 +13,10 @@ void CoarseGrainedLinkedList::add(int key){
     UnSyncLinkedList::m_add(key);
 }
 
-void CoarseGrainedLinkedList::remove(int key){
+bool CoarseGrainedLinkedList::remove(int key){
     std::lock_guard<std::mutex> lock(mux_);
-    UnSyncLinkedList::m_remove(key);
+    bool boolean =  UnSyncLinkedList::m_remove(key);
+    return boolean;
 }
 
 int CoarseGrainedLinkedList::getSize(){
@@ -24,16 +25,6 @@ int CoarseGrainedLinkedList::getSize(){
     return size;
 }
 
-LinkedListNode* CoarseGrainedLinkedList::getHead(){
-    std::lock_guard<std::mutex> lock(mux_);
-    // m_head from parent class
-    return m_head;
-}
-LinkedListNode* CoarseGrainedLinkedList::getTail(){
-    std::lock_guard<std::mutex> lock(mux_);
-    // m_head from parent class
-    return m_tail;
-}
 
 void CoarseGrainedLinkedList::display(){
     std::lock_guard<std::mutex> lock(mux_);

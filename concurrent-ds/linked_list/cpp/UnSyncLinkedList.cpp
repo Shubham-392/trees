@@ -25,9 +25,9 @@ void UnSyncLinkedList::m_add(int key){
 }
 
 
-void UnSyncLinkedList::m_remove(int key){
+bool UnSyncLinkedList::m_remove(int key){
     if (m_size == 0){
-        return;
+        return false;
     }
 
     else if(m_size == 1){
@@ -36,8 +36,9 @@ void UnSyncLinkedList::m_remove(int key){
             m_head = nullptr;
             m_tail = nullptr;
             m_size = 0;
+            return true;
         }
-        return;
+        return false;
     }
 
     else{
@@ -46,7 +47,7 @@ void UnSyncLinkedList::m_remove(int key){
             m_head = m_head->next;
             delete temp;
             m_size--;
-            return;
+            return true;
         }
 
         LinkedListNode* prev = m_head;
@@ -60,11 +61,13 @@ void UnSyncLinkedList::m_remove(int key){
                 }
                 delete curr;
                 m_size--;
-                return;
+                return true;
             }
             prev = curr;
             curr = curr->next;
         }
+
+        return false;
     }
 }
 int UnSyncLinkedList::m_getSize(){

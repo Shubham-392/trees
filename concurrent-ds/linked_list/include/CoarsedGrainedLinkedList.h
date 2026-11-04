@@ -19,12 +19,9 @@ class CoarseGrainedLinkedList: public UnSyncLinkedList{
         ~CoarseGrainedLinkedList() = default;
         // public members
         void add(int key) override; // gives out exception for duplicate key insertion
-        void remove(int key) override;
+        bool remove(int key) override;
         void display() override;
         int getSize() override;
-
-        LinkedListNode* getHead();
-        LinkedListNode* getTail();
         
     private:
         // mutex
