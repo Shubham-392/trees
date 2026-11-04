@@ -6,6 +6,7 @@
   * 
   * 
   */
+#pragma once
 #include "UnSyncLinkedList.h"
 #include <mutex>
 
@@ -13,15 +14,20 @@
 
 class CoarseGrainedLinkedList: public UnSyncLinkedList{
     public:
-        CoarseGrainedLinkedList();
-        CoarseGrainedLinkedList(const std::vector<int> arr);
-        ~CoarseGrainedLinkedList();
+        CoarseGrainedLinkedList() = default;
+        CoarseGrainedLinkedList(const std::vector<int>& arr);
+        ~CoarseGrainedLinkedList() = default;
         // public members
         void add(int key) override; // gives out exception for duplicate key insertion
-        bool remove(int key) override;
+        void remove(int key) override;
+        void display() override;
         int getSize() override;
+
+        LinkedListNode* getHead();
+        LinkedListNode* getTail();
         
     private:
         // mutex
         std::mutex mux_;
+        
 };

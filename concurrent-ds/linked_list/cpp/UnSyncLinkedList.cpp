@@ -1,5 +1,6 @@
 #include "UnSyncLinkedList.h"
 #include <vector>
+#include <iostream>
 
 
 UnSyncLinkedList::UnSyncLinkedList(const std::vector<int>& arr){
@@ -24,6 +25,66 @@ void UnSyncLinkedList::m_add(int key){
 }
 
 
-bool UnSyncLinkedList::m_remove(int key){
-   
+void UnSyncLinkedList::m_remove(int key){
+    if (m_size == 0){
+        return;
+    }
+
+    else if(m_size == 1){
+        if(m_head->key == key){
+            delete m_head;
+            m_head = nullptr;
+            m_tail = nullptr;
+            m_size = 0;
+        }
+        return;
+    }
+
+    else{
+        if (m_head->key == key){
+            LinkedListNode* temp = m_head;
+            m_head = m_head->next;
+            delete temp;
+            m_size--;
+            return;
+        }
+
+        LinkedListNode* prev = m_head;
+        LinkedListNode* curr = m_head->next;
+
+        while(curr != nullptr){
+            if(curr->key == key){
+                prev->next = curr->next;
+                if (curr == m_tail){
+                    m_tail = prev;
+                }
+                delete curr;
+                m_size--;
+                return;
+            }
+            prev = curr;
+            curr = curr->next;
+        }
+    }
+}
+int UnSyncLinkedList::m_getSize(){
+    return m_size;
+}
+
+
+void UnSyncLinkedList::m_display(){
+    if (m_head == nullptr){
+        std::cout << "list is empty" << std::endl;
+        return;
+    }
+
+    LinkedListNode* curr = m_head;
+    while (curr != nullptr){
+        std::cout << curr->key;
+        if (curr->next != nullptr){
+            std::cout << " -> ";
+        }
+        curr = curr->next;
+    }
+    std::cout << std::endl;
 }

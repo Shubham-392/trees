@@ -16,7 +16,6 @@
 
 #include "LinkedListNode.h"
 #include <vector>
-#include <optional>
 
 class UnSyncLinkedList{
     public:
@@ -34,14 +33,16 @@ class UnSyncLinkedList{
               }
         };
         // derived class have to override these methods
-        virtual void add(int key) = 0;
-        virtual bool remove(int key) = 0; // return -1 if not found
-        virtual int getSize() = 0;
-        
+        virtual void add(int key) = 0 ;
+        virtual void remove(int key) = 0 ; // return -1 if not found
+        virtual int getSize()  = 0;
+        virtual void display()  = 0;
+
+        void m_display();
     protected:
         void m_add(int key);
-        bool m_remove(int key);
-        
+        void m_remove(int key);
+        int m_getSize();
         LinkedListNode* m_head{nullptr};
         LinkedListNode* m_tail{nullptr};
 
