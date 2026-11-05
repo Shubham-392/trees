@@ -51,6 +51,7 @@ bool FineGrainLinkedList::add(int item){
     FineGrainNode* new_node = new FineGrainNode(item);
     new_node->m_next = curr;
     prev->m_next = new_node;
+    size_++;
     return true;
     
 }
@@ -71,6 +72,7 @@ bool FineGrainLinkedList::remove(int item){
         prev->m_next = curr->m_next;
         curr_lock.unlock();
         delete curr;
+        size_--;
         return true;
     }else{
         return false;
@@ -79,3 +81,13 @@ bool FineGrainLinkedList::remove(int item){
 
 
 
+bool FineGrainLinkedList::contains(int item){
+    std::unique_lock<std::mutex> glob_lock(m_head->mux_);
+    auto curr = m_head;
+    while(curr->m_key < item){
+        curr = curr->m_next;
+        glob_lock = std::unique_lock<std::mutex>(curr->mux_);
+    }
+
+    return curr->m_key == item;
+}
