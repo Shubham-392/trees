@@ -55,7 +55,27 @@ bool FineGrainLinkedList::add(int item){
     
 }
 
+bool FineGrainLinkedList::remove(int item){
+    std::unique_lock<std::mutex> prev_lock(m_head->mux_);
+    auto prev = m_head;
+    auto curr = m_head->m_next;
+    std::unique_lock<std::mutex> curr_lock(curr->mux_);
+    while(curr->m_key < item ){
+        prev_lock = std::move(curr_lock);
+        prev = curr;
+        curr = curr->m_next;
+        curr_lock = std::unique_lock<std::mutex>(curr->mux_);
+    }
 
+    if (curr->m_key == item){
+        prev->m_next = curr->m_next;
+        curr_lock.unlock();
+        delete curr;
+        return true;
+    }else{
+        return false;
+    }
+}
 
 
 
