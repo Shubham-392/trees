@@ -1,6 +1,7 @@
 // fine-grained linked list with it's own 
 // linkedlist node having lock per node
 // 
+#pragma once
 #include <mutex>
 class FineGrainNode{
     public:
@@ -26,4 +27,5 @@ class FineGrainLinkedList{
         bool add(int item);
         bool remove(int item);
         bool contains(int item);
+        int size_{0};
 };
