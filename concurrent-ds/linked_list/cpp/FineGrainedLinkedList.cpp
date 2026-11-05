@@ -7,7 +7,7 @@
 
 FineGrainNode::FineGrainNode(int key): m_key(key){}
 FineGrainNode::FineGrainNode(int key, FineGrainNode* next): m_key(key), m_next(next){};
-FineGrainNode::FineGrainNode(const FineGrainNode& node): m_key(node.m_key), m_next(node.m_next){}
+
 
 
 

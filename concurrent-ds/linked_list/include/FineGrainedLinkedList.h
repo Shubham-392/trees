@@ -6,7 +6,7 @@ class FineGrainNode{
     public:
         FineGrainNode(int key);
         FineGrainNode(int key, FineGrainNode* next );
-        FineGrainNode(const FineGrainNode& node);
+        FineGrainNode(const FineGrainNode& node) = delete;
         int m_key;
         FineGrainNode* m_next{nullptr};
         std::mutex mux_;
